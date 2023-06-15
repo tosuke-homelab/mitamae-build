@@ -37,10 +37,13 @@
             names;
         in
           listToAttrs entries;
+
+        oci-packages = pkgs.callPackage ./nix/oci/image.nix {};
       in {
         packages =
           {default = mitamaes.host;}
-          // bin-packages;
+          // bin-packages
+          // oci-packages;
 
         formatter = treefmt;
         devShell = pkgs.mkShell {
