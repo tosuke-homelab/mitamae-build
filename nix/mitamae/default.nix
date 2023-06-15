@@ -118,7 +118,7 @@ in
       target = "host";
       nativeBuildInputs = hostBuildInputs;
       buildPhase = ''
-        unset LD
+        unset LD # Don't use ld (see: https://github.com/mruby/mruby/blob/35be8b252495d92ca811d76996f03c470ee33380/tasks/toolchains/gcc.rake#L25)
         rake
       '';
     };
@@ -129,10 +129,11 @@ in
         nativeBuildInputs = hostBuildInputs ++ [pkgs.zig];
         buildPhase = ''
           unset LD
+          export XDG_CACHE_HOME=$(mktemp -d) # Workaround for https://github.com/ziglang/zig/issues/6810
           rake --trace compile BUILD_TARGET=${target}
         '';
       };
   in
-    #mitamae-src-for { target = "linux-aarch64"; }
-    mitamae-cross { target = "linux-aarch64"; }
-    # mitamae-host
+    #mitamae-src-for {target = "linux-aarch64";}
+    mitamae-cross {target = "linux-aarch64";}
+# mitamae-host
