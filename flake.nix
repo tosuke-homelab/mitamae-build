@@ -25,9 +25,22 @@
           programs.alejandra.enable = true;
         };
 
-        mitamae-x = pkgs.callPackage ./nix/mitamae {};
+        mitamaes = pkgs.callPackage ./nix/mitamae {};
+
+        bin-packages = with builtins; let
+          names = import ./nix/mitamae/targets.nix;
+          entries =
+            map (name: {
+              name = "bin-" + name;
+              value = mitamaes.${name};
+            })
+            names;
+        in
+          listToAttrs entries;
       in {
-        packages.default = mitamae-x;
+        packages =
+          {default = mitamaes.host;}
+          // bin-packages;
 
         formatter = treefmt;
         devShell = pkgs.mkShell {

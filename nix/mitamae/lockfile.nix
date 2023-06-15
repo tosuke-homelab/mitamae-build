@@ -22,15 +22,25 @@
   in
     listToAttrs lockEntries;
 
+  targets = import ./targets.nix;
+
+  buildsSection = with builtins; let
+    names = ["host"] ++ targets;
+    buildEntries =
+      map (name: {
+        name = name;
+        value = lockSection;
+      })
+      names;
+  in
+    listToAttrs buildEntries;
+
   lockfile = {
     mruby = {
       version = "3.0.0";
       release_no = 30000;
     };
-    builds = {
-      host = lockSection;
-      linux-aarch64 = lockSection;
-    };
+    builds = buildsSection;
   };
 in
   stdenv.mkDerivation {
