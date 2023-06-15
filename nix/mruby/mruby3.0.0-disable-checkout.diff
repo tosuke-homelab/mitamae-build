@@ -1,0 +1,32 @@
+--- a/lib/mruby/build/load_gems.rb
++++ b/lib/mruby/build/load_gems.rb
+@@ -92,9 +92,9 @@ module MRuby
+             git.run_checkout gemdir, branch
+             git.run_pull gemdir, url
+           elsif params[:checksum_hash]
+-            git.run_checkout_detach gemdir, params[:checksum_hash]
++            # git.run_checkout_detach gemdir, params[:checksum_hash]
+           elsif lock
+-            git.run_checkout_detach gemdir, lock['commit']
++            # git.run_checkout_detach gemdir, lock['commit']
+           end
+         else
+           options = [params[:options]] || []
+@@ -114,11 +114,11 @@ module MRuby
+ 
+         if lock_enabled?
+           @gem_dir_to_repo_url[gemdir] = url unless params[:path]
+-          locks[url] = {
+-            'url' => url,
+-            'branch' => git.current_branch(gemdir),
+-            'commit' => git.commit_hash(gemdir),
+-          }
++          # locks[url] = {
++          #   'url' => url,
++          #   'branch' => git.current_branch(gemdir),
++          #   'commit' => git.commit_hash(gemdir),
++          # }
+         end
+ 
+         gemdir << "/#{params[:path]}" if params[:path]
+
