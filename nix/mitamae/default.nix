@@ -12,6 +12,7 @@ in
     fetchFromGitHub,
   }: let
     mruby-src = pkgs.callPackage ../mruby {};
+    lockfile = pkgs.callPackage ./lockfile.nix {};
     mitamae-src = stdenv.mkDerivation {
       name = "mitamae-src";
 
@@ -37,6 +38,8 @@ in
       installPhase = ''
         mkdir -p $out
         cp -r . $out
+
+        cp ${lockfile}/build_config.rb.lock $out
 
         mkdir -p $out/mruby
         cp -r ${mruby-src}/* $out/mruby
@@ -126,9 +129,10 @@ in
         nativeBuildInputs = hostBuildInputs ++ [pkgs.zig];
         buildPhase = ''
           unset LD
-          rake compile BUILD_TARGET=${target}
+          rake --trace compile BUILD_TARGET=${target}
         '';
       };
   in
-    # mitamae-cross { target = "linux-aarch64"; }
-    mitamae-host
+    #mitamae-src-for { target = "linux-aarch64"; }
+    mitamae-cross { target = "linux-aarch64"; }
+    # mitamae-host

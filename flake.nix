@@ -26,8 +26,6 @@
         };
 
         mitamae-x = pkgs.callPackage ./nix/mitamae {};
-
-        lock = import ./nix/mitamae/lock.nix;
       in {
         packages.default = mitamae-x;
 
