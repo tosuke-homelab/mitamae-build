@@ -1,0 +1,36 @@
+--- a/Rakefile
++++ b/Rakefile
+@@ -51,6 +51,7 @@ CROSS_TARGETS = %w[
+   linux-i386
+   linux-armhf
+   linux-aarch64
++  linux-mips
+   darwin-x86_64
+   darwin-aarch64
+ ]
+--- a/build_config.rb
++++ b/build_config.rb
+@@ -98,6 +98,23 @@ if build_targets.include?('linux-aarch64')
+   end
+ end
+ 
++if build_targets.include?('linux-mips')
++  MRuby::CrossBuild.new('linux-mips') do |conf|
++    toolchain :gcc
++
++    [conf.cc, conf.linker].each do |cc|
++      cc.command = 'zig cc -target mips-linux-musl'
++    end
++    conf.archiver.command = 'zig ar'
++
++    # To configure: mrbgems/mruby-yaml, k0kubun/mruby-onig-regexp
++    conf.host_target = 'mips-linux-musl'
++
++    debug_config(conf)
++    gem_config(conf)
++  end
++end
++
+ if build_targets.include?('darwin-x86_64')
+   MRuby::CrossBuild.new('darwin-x86_64') do |conf|
+     toolchain :gcc
