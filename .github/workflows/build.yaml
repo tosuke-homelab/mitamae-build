@@ -36,3 +36,29 @@ jobs:
         name: ${{ vars.CACHIX_NAME }}
         authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
     - run: nix build .#${{ matrix.target }}
+
+  push-image:
+    needs: build-bin
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3 
+    - uses: cachix/install-nix-action@v22
+    - uses: cachix/cachix-action@v12
+      with:
+        name: ${{ vars.CACHIX_NAME }}
+        authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+    - run: nix build .#oci
+
+    - uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - uses: docker/metadata-action@v4
+      id: meta
+      with:
+        images: ghcr.io/${{ github.repository }}
+    
+    - run: echo ${{ steps.meta.outputs.tags }}
