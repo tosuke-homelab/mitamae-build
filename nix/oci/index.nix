@@ -6,21 +6,21 @@
 
   images = with ocis; [
     {
-      dist = oci-linux-x86_64;
+      dist = linux-x86_64;
       platform = {
         os = "linux";
         architecture = "amd64";
       };
     }
     {
-      dist = oci-linux-i386;
+      dist = linux-i386;
       platform = {
         os = "linux";
         architecture = "386";
       };
     }
     {
-      dist = oci-linux-armhf;
+      dist = linux-armhf;
       platform = {
         os = "linux";
         architecture = "arm";
@@ -28,7 +28,7 @@
       };
     }
     {
-      dist = oci-linux-aarch64;
+      dist = linux-aarch64;
       platform = {
         os = "linux";
         architecture = "arm64";
