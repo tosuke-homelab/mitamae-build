@@ -64,7 +64,8 @@ jobs:
     - uses: docker/metadata-action@v4
       id: meta
       with:
-        images: ghcr.io/${{ github.repository }}
+        images: |
+          ghcr.io/tosuke-homelab/mitamae
         tags: |
           type=ref,event=branch
           type=ref,event=pr
@@ -72,7 +73,7 @@ jobs:
     
     - name: Push OCI images
       run: |
-        for dest in $(echo $TAGS | tr " " \n); do
+        for dest in $(echo $TAGS); do
           nix run .#skopeo -- copy --multi-arch all oci:result/oci docker://$dest
         done
       env:
