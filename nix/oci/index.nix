@@ -24,7 +24,7 @@
       platform = {
         os = "linux";
         architecture = "arm";
-        variant = "v6";
+        variant = "v7";
       };
     }
     {
