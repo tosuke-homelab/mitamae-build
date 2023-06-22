@@ -32,28 +32,25 @@
   entries =
     builtins.map (name: {
       name = "oci-${name}";
-      value = let
-        config = platforms.${name};
-      in
-        stdenv.mkDerivation {
-          name = "oci-${name}";
+      value = stdenv.mkDerivation {
+        name = "oci-${name}";
 
-          src = mitamaes.${name};
-          dontBuild = true;
-          buildInputs = with pkgs; [jq oras];
+        src = mitamaes.${name};
+        nativeBuildInputs = [pkgs.oras];
 
-          configJSON = builtins.toJSON config;
+        buildPhase = ''
+          mkdir oci
+          tar -czf mitamae.tar.gz mitamae
+          oras push --export-manifest manifest.json --oci-layout oci mitamae.tar.gz:application/vnd.oci.image.layer.v1.tar+gzip
+        '';
 
-          installPhase = ''
-            mkdir -p $out
+        installPhase = ''
+          mkdir -p $out
 
-            tar -zcvf mitamae.tar.gz mitamae
-
-            echo $configJSON > config.json
-
-            oras push --oci-layout $out --config config.json mitamae.tar.gz:application/vnd.oci.image.layer.v1.tar+gzip
-          '';
-        };
+          cp -r oci $out
+          cp manifest.json $out/manifest.json
+        '';
+      };
     })
     names;
 in

@@ -39,11 +39,13 @@
           listToAttrs entries;
 
         oci-packages = pkgs.callPackage ./nix/oci/image.nix {};
+        oci-index = pkgs.callPackage ./nix/oci/index.nix {};
       in {
         packages =
           {default = mitamaes.host;}
           // bin-packages
-          // oci-packages;
+          // oci-packages
+          // {oci = oci-index;};
 
         formatter = treefmt;
         devShell = pkgs.mkShell {
