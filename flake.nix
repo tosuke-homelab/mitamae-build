@@ -25,33 +25,53 @@
           programs.alejandra.enable = true;
         };
 
-        mitamaes = pkgs.callPackage ./nix/mitamae {};
+        bins = pkgs.callPackage ./nix/mitamae {};
+        oci-images = pkgs.callPackage ./nix/oci/image.nix {};
+        oci-index = pkgs.callPackage ./nix/oci/index.nix {};
 
-        bin-packages = with builtins; let
+        packages = with builtins; let
           names = import ./nix/mitamae/targets.nix;
-          entries =
+          multiarch-bin-entries =
             map (name: {
               name = "bin-" + name;
-              value = mitamaes.${name};
+              value = bins.${name};
+            })
+            names;
+          oci-entries =
+            map (name: {
+              name = "oci-" + name;
+              value = oci-images.${name};
             })
             names;
         in
-          listToAttrs entries;
-
-        oci-packages = pkgs.callPackage ./nix/oci/image.nix {};
-        oci-index = pkgs.callPackage ./nix/oci/index.nix {};
+          listToAttrs ([
+              {
+                name = "bin-host";
+                value = bins.host;
+              }
+            ]
+            ++ multiarch-bin-entries
+            ++ oci-entries
+            ++ [
+              {
+                name = "oci";
+                value = oci-index;
+              }
+            ]);
       in {
+        apps.skopeo = with pkgs; {
+          type = "app";
+          program = "${pkgs.skopeo}/bin/skopeo";
+        };
         packages =
-          {default = mitamaes.host;}
-          // bin-packages
-          // oci-packages
-          // {oci = oci-index;};
+          packages
+          // {
+            default = packages.bin-host;
+          };
 
         formatter = treefmt;
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
-            yq
-            upx
             oras
             skopeo
           ];

@@ -1,0 +1,79 @@
+name: Build
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+
+jobs:
+  build-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      target: ${{ steps.set-targets.outputs.value }}
+    steps:
+    - uses: actions/checkout@v3
+    - uses: cachix/install-nix-action@v22
+    - name: Get targets
+      id: set-targets
+      run: |
+        targets=$(nix flake show --json | jq -c '.packages["x86_64-linux"] | keys | [.[] | select(test("^bin-"))]')
+        echo "value=${targets}" >> $GITHUB_OUTPUT
+
+  build-bin:
+    needs: build-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJson(needs.build-matrix.outputs.target) }}
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: cachix/install-nix-action@v22
+    - uses: cachix/cachix-action@v12
+      with:
+        name: ${{ vars.CACHIX_NAME }}
+        authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+    - run: nix build .#${{ matrix.target }}
+
+  push-image:
+    needs: build-bin
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v3 
+    - uses: cachix/install-nix-action@v22
+    - uses: cachix/cachix-action@v12
+      with:
+        name: ${{ vars.CACHIX_NAME }}
+        authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+    - run: nix build .#oci
+
+    - uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - uses: docker/metadata-action@v4
+      id: meta
+      with:
+        images: ghcr.io/${{ github.repository }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+    
+    - name: Push OCI images
+      run: |
+        for dest in $(echo $TAGS | tr " " \n); do
+          nix run .#skopeo -- copy --multi-arch all oci:result/oci docker://$dest
+        done
+      env:
+        TAGS: ${{ steps.meta.outputs.tags }}
