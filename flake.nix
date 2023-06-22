@@ -37,11 +37,12 @@
               value = bins.${name};
             })
             names;
-          oci-entries = map (name: {
-            name = "oci-" + name;
-            value = oci-images.${name};
-          })
-          names;
+          oci-entries =
+            map (name: {
+              name = "oci-" + name;
+              value = oci-images.${name};
+            })
+            names;
         in
           listToAttrs ([
               {
@@ -58,6 +59,10 @@
               }
             ]);
       in {
+        apps.skopeo = with pkgs; {
+          type = "app";
+          program = "${pkgs.skopeo}/bin/skopeo";
+        };
         packages =
           packages
           // {
@@ -67,8 +72,6 @@
         formatter = treefmt;
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
-            yq
-            upx
             oras
             skopeo
           ];

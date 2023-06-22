@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - v*
 
 jobs:
   build-matrix:
@@ -40,6 +42,9 @@ jobs:
   push-image:
     needs: build-bin
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
     - uses: actions/checkout@v3 
@@ -60,5 +65,15 @@ jobs:
       id: meta
       with:
         images: ghcr.io/${{ github.repository }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
     
-    - run: echo ${{ steps.meta.outputs.tags }}
+    - name: Push OCI images
+      run: |
+        for dest in $(echo $TAGS | tr " " \n); do
+          nix run .#skopeo -- copy --multi-arch all oci:result/oci docker://$dest
+        done
+      env:
+        TAGS: ${{ steps.meta.outputs.tags }}
