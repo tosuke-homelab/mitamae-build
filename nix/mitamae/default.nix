@@ -86,8 +86,8 @@
     target,
     nativeBuildInputs,
     buildPhase,
-  }:
-    pkgs.stdenv.mkDerivation {
+  }: let
+    raw = pkgs.stdenv.mkDerivation {
       name = "mitamae-${target}";
 
       src = mitamae-src-for {inherit target;};
@@ -99,6 +99,24 @@
         cp mruby/build/${target}/bin/mitamae $out/mitamae
       '';
     };
+    upx = pkgs.stdenv.mkDerivation {
+      name = "mitamae-${target}-upx";
+
+      src = raw;
+
+      nativeBuildInputs = [pkgs.upx];
+
+      buildPhase = ''
+        upx -9 mitamae
+      '';
+
+      installPhase = ''
+        mkdir $out
+        cp mitamae $out/mitamae
+      '';
+    };
+  in
+    upx;
 
   hostBuildInputs = with pkgs; [
     ruby

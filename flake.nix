@@ -72,6 +72,7 @@
         formatter = treefmt;
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
+            upx
             oras
             skopeo
           ];
