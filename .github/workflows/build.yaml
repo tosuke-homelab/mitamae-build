@@ -7,8 +7,27 @@ on:
       - main
 
 jobs:
-  build-bin:
+  build-matrix:
     runs-on: ubuntu-latest
+    outputs:
+      target: ${{ steps.set-targets.outputs.value }}
+    steps:
+    - uses: actions/checkout@v3
+    - uses: cachix/install-nix-action@v22
+    - name: Get targets
+      id: set-targets
+      run: |
+        targets=$(nix flake show --json | jq -c '.packages["x86_64-linux"] | keys | [.[] | select(test("^bin-"))]')
+        echo "value=${targets}" >> $GITHUB_OUTPUT
+
+  build-bin:
+    needs: build-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJson(needs.build-matrix.outputs.target) }}
+
     steps:
     - uses: actions/checkout@v3
     - uses: cachix/install-nix-action@v22
@@ -16,4 +35,4 @@ jobs:
       with:
         name: ${{ vars.CACHIX_NAME }}
         authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-    - run: nix build
+    - run: nix build .#${{ matrix.target }}

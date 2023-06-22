@@ -2,36 +2,11 @@
   pkgs,
   stdenv,
 }: let
-  platforms = {
-    linux-x86_64 = {
-      os = "linux";
-      architecture = "amd64";
-    };
-    linux-i386 = {
-      os = "linux";
-      architecture = "386";
-    };
-    linux-armhf = {
-      os = "linux";
-      architecture = "arm";
-      variant = "v6";
-    };
-    linux-aarch64 = {
-      os = "linux";
-      architecture = "arm64";
-      variant = "v8";
-    };
-  };
   mitamaes = pkgs.callPackage ../mitamae {};
-  mitamae-amd64-linux = mitamaes.linux-x86_64;
-  config = {
-    os = "linux";
-    architecture = "amd64";
-  };
-  names = builtins.attrNames platforms;
+  names = ["linux-x86_64" "linux-i386" "linux-armhf" "linux-aarch64"];
   entries =
     builtins.map (name: {
-      name = "oci-${name}";
+      inherit name;
       value = stdenv.mkDerivation {
         name = "oci-${name}";
 
