@@ -3,7 +3,7 @@
   stdenv,
 }: let
   mitamaes = pkgs.callPackage ../mitamae {};
-  names = ["linux-x86_64" "linux-i386" "linux-armhf" "linux-aarch64"];
+  names = import ../mitamae/targets.nix;
   entries =
     builtins.map (name: {
       inherit name;

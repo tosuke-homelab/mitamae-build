@@ -3,4 +3,5 @@
   "linux-i386"
   "linux-armhf"
   "linux-aarch64"
+  "linux-mips"
 ]

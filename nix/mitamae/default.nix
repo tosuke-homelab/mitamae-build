@@ -14,6 +14,9 @@
       rev = "v1.14.0";
       sha256 = "sha256-1U+adYeGBwyXvtvJOEXr4RjUWpjxb5Uhj45Ar4mGf/g=";
     };
+    patches = [
+      ./arch.diff
+    ];
 
     dontBuild = true;
 

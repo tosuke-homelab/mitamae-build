@@ -24,7 +24,7 @@
       platform = {
         os = "linux";
         architecture = "arm";
-        variant = "v7";
+        variant = "v6";
       };
     }
     {
@@ -33,6 +33,13 @@
         os = "linux";
         architecture = "arm64";
         variant = "v8";
+      };
+    }
+    {
+      dist = linux-mips;
+      platform = {
+        os = "linux";
+        architecture = "mips";
       };
     }
   ];
